@@ -1,0 +1,4 @@
+"0","pearson %>%"
+"0","  ggplot(aes(x = father, y = son)) +"
+"0","  geom_point(size = 0.1, col = 'red') +"
+"0","  geom_smooth(se = FALSE, method = 'lm')"

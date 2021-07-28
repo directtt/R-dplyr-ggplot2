@@ -1,0 +1,6 @@
+"0","auta2012 %>%"
+"0","  filter(Model == 'Passat', Brand == 'Volkswagen') %>%"
+"0","  as_tibble() %>%"
+"0","  ggplot(aes(x = Year, y = Price.in.PLN)) +"
+"0","  geom_smooth(se = FALSE) +"
+"0","  theme_economist_white()"

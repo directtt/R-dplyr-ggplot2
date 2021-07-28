@@ -1,0 +1,2 @@
+"0","ggplot(cats_birds, aes(x = weight, y = speed, size = lifespan, color = lifespan))+"
+"0","  geom_point()"

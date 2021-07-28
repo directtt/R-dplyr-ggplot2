@@ -1,0 +1,14 @@
+"0","library(tidyverse)"
+"0","library(ggthemes)"
+"2","package ‘ggthemes’ was built under R version 4.0.3"
+"0","library(PogromcyDanych)"
+"2","package ‘PogromcyDanych’ was built under R version 4.0.3"
+"2","Loading required package: SmarterPoland
+"
+"2","package ‘SmarterPoland’ was built under R version 4.0.3"
+"2","Loading required package: httr
+"
+"2","Loading required package: htmltools
+"
+"0","setLang(lang = 'eng')"
+"0","knitr::opts_chunk$set(echo = TRUE)"
