@@ -1,0 +1,26 @@
+{
+    "id": "4589D209",
+    "path": "D:/ggplot2_git/ggplot2/output.Rmd",
+    "project_path": "output.Rmd",
+    "type": "r_markdown",
+    "hash": "2478975526",
+    "contents": "",
+    "dirty": false,
+    "created": 1627490720606.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "cursorPosition": "69,32",
+        "scrollLine": "63",
+        "last_setup_crc32": "3CE11CD047b37084"
+    },
+    "folds": "15|227|31|0|\n32|181|41|8|\n33|38|38|0|\n42|261|61|8|\n76|195|87|0|\n88|29|94|0|\n95|125|108|0|\n145|122|159|0|\n160|65|176|0|\n177|67|200|0|\n201|152|214|0|\n",
+    "lastKnownWriteTime": 1627498580,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1627498581009,
+    "read_only": false,
+    "read_only_alternatives": []
+}

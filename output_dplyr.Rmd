@@ -1,0 +1,264 @@
+---
+title: "dplyr"
+author: "Jędrzej Rybczyński"
+date: "7/29/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(PogromcyDanych)
+setLang(lang = 'eng')
+```
+
+## 1. Zbiór danych airquality zawiera informacje o warunkach pogodowych w Nowym Yorku od maja do września 1973 roku. Wykonaj poniższy fragment kodu (pamiętaj o odpowiednich bibliotekach) aby przygotować dane do dalszych ćwiczeń.
+```{r echo=TRUE, results='hide'}
+airquality %>%
+  select(Temp, Month, Day) %>%
+  as_tibble() -> data.set
+```
+### (a) Przekształć dane w postać szeroką. Kluczem powinien być miesiąc, a wartościami temperatura.
+```{r echo=TRUE}
+data.set %>%
+  pivot_wider(names_from = 'Month', values_from = 'Temp') -> df.wide
+```  
+
+### (b) Dane szerokie z poprzedniego podpunktu przywróć do postaci długiej.
+```{r echo=TRUE}
+df.wide %>%
+  pivot_longer(cols = -Day, names_to = 'Month', values_to = 'Temp')
+```  
+\newpage
+
+### (c) Połącz zmienne Day oraz Month w nową zmienną Date o formacie %d.%m.
+```{r echo=TRUE}
+data.set %>%
+  unite('Date', Day:Month, sep = '.') -> df.Date
+```  
+
+### (d) Podziel uprzednio utworzoną zmienną Date na dwie zmienne: Day oraz Month.
+```{r echo=TRUE}
+df.Date %>%
+  separate(Date, into = c('Day', 'Month'), sep = '\\.')
+```  
+
+### (e) Wygeneruj pięć braków w danych za pomocą poniższego kodu. Zastąp braki danych (NA) przez Unknown. 
+```{r echo=TRUE, results='hide'}
+set.seed(1000)
+data.set[sample(nrow(data.set), 5, replace = FALSE), 'Temp'] <- NA
+```
+```{r echo=TRUE}
+data.set %>%
+  replace_na(list(Temp = 'Unknown', Month = NA, Day = NA)) -> check
+```  
+
+### (f) Zastąp braki w danych za pomocą uzupełniania przez ostatnią zaobserwowaną wartość.
+```{r echo=TRUE}
+data.set %>%
+  fill(Temp, .direction = 'downup') -> data.set
+```  
+
+
+
+
+
+\newpage
+## 2. Wszystkie polecenia w tym zadaniu dotyczą zbioru auta2012 z pakietu PogromcyDanych.
+### (a) Ile cech jest cechami jakościowymi?
+```{r echo=TRUE}
+sum(sapply(auta2012, function(x) is.factor(x)))
+```  
+### (b) Która marka samochodów jest najpopularniejsza?
+```{r echo=TRUE}
+auta2012 %>%
+  group_by(Brand) %>%
+  summarise(n = n()) %>%
+  arrange(-n) %>%
+  top_n(1)
+``` 
+### (c) Ile procent samochodów jest napędzane benzyną?
+```{r echo=TRUE}
+auta2012 %>%
+  group_by(Type.of.fuel) %>%
+  summarise(n = n()) %>%
+  arrange(-n) %>%
+  mutate(Perc = round(n / nrow(auta2012) * 100, 2)) %>%
+  select(Type.of.fuel, Perc)
+``` 
+### (d) Ile aut od 2000 PLN?
+```{r echo=TRUE}
+auta2012 %>%
+  count(Price.in.PLN >= 2000)
+``` 
+### (e) Ile procent aut ma pojemność silnika większą bądź równą 1500 cm3?
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Engine.cubic.capacity >= 1500) %>%
+  summarise(Perc = (n() / nrow(auta2012)) * 100)
+```
+### (f) Ile aut zostało zarejestrowanych w Polsce i jest tańsze od 2000 PLN?
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Price.in.PLN < 2000, Country.of.current.registration == 'Polska') %>%
+  summarise(number = n())
+``` 
+### (g) Ile procent aut ma pojemność silnika większą od 1500 cm3 i jest dieslem.
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Engine.cubic.capacity > 1500,
+  Type.of.fuel == 'olej napedowy (diesel)') %>%
+  summarise(perc = (n() / nrow(auta2012)) * 100)
+``` 
+### (h) Wybierz jedynie auta marki Volkswagen. Dla tak wybranych danych utwórz tablicę kontyngencji dla zmiennej Type.of.fuel.
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Brand == 'Volkswagen') %>%
+  count(Type.of.fuel)
+``` 
+### (i) Wybierz jedynie auta marki Volkswagen. Dla tak wybranych danych wyznacz średnią cenę i średni przebieg.
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Brand == 'Volkswagen') %>%
+  summarise(mean.price = mean(Price.in.PLN), 
+            mean.mileage = mean(Mileage, na.rm = TRUE))
+``` 
+### (j) Wyznacz średnią cenę dla każdej marki.
+```{r echo=TRUE}
+auta2012 %>%
+  group_by(Brand) %>%
+  summarise(mean.price = mean(Price.in.PLN), n = n()) %>%
+  arrange(desc(mean.price))
+``` 
+### (k) Wybierz jedynie auta Toyota Corolla. Dla tak wybranych danych wyznacz pierwszy i trzeci kwartyl ceny.
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Brand == 'Toyota', Model == 'Corolla') %>%
+  summarise(Q1 = quantile(Price.in.PLN, 0.25),
+            Q3 = quantile(Price.in.PLN, 0.75))
+``` 
+### (l) Wybierz jedynie auta marki Toyota. Dla tak wybranych danych, dla każdego modelu wyznacz średnią cenę. Wyniki przedstaw posortowane w kolejności malejącej.
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Brand == 'Toyota') %>%
+  group_by(Model) %>%
+  summarise(mean.price = mean(Price.in.PLN), n = n()) %>%
+  filter(n >= 50) %>%
+  arrange(-mean.price)
+``` 
+### (m) Wybierz auta Volkswagen Passat z roku 2006. Dla tak wybranych danych wyznacz średnią cenę. Ile spośród wybranych aut jest tańsze od 35 000 PLN?
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Brand == 'Volkswagen', Model == 'Passat', Year == 2006) %>%
+  summarise(mean.price = mean(Price.in.PLN),
+            cheaper.than.35000 = sum(Price.in.PLN < 35000),
+            count = n())
+``` 
+### (n) Wybierz jedynie auta z roku 2007. Dla tak wybranych danych ile mamy aut każdej marki? Przedstaw wyniki w postaci posortowanej (kolejność rosnąca) po wielkości każdej grupy.
+```{r echo=TRUE}
+auta2012 %>%
+  filter(Year == 2007) %>%
+  count(Brand) %>%
+  arrange(n) %>%
+  as_tibble()
+``` 
+\newpage
+
+## 3. Zbiór danych Fertility z pakietu AER zawiera informacje na temat zamężnych kobiet w wieku 21-35 lat, które posiadają dwoje lub więcej dzieci (spis z roku 1980 w USA).
+### (a) Przyjrzyj się danym wykorzystując np. polecenie glimpse().
+```{r echo=TRUE}
+data(Fertility, package = 'AER')
+glimpse(Fertility)
+``` 
+### (b) Wybierz wiersze od 35 do 50 i kolumny age oraz work.
+```{r echo=TRUE}
+Fertility %>%
+  slice(35:50) %>%
+  select(age, work)
+```
+### (c) Wybierz ostatni wiersz danych.
+```{r echo=TRUE}
+Fertility %>%
+  tail(1)
+```
+### (d) Ile kobiet miało trzecie dziecko?
+```{r echo=TRUE}
+Fertility %>%
+  count(morekids)
+```
+### (e) Która z kombinacji płci (4 możliwości) dla pierwszej dwójki dzieci jest najpopularniejsza?
+```{r echo=TRUE}
+Fertility %>%
+  count(gender1, gender2) %>%
+  arrange(n)
+```
+### (f) Wyznacz procent kobiet pracujących 4 tygodnie lub mniej biorąc pod uwagę czynnik rasowy.
+```{r echo=TRUE}
+Fertility %>%
+  group_by(afam, hispanic, other) %>%
+  summarise(Perc = sum(work < 4) / n())
+```
+### (g) Wyznacz procent kobiet w wieku 22-24 lat, których pierwszym dzieckiem był chłopiec.
+```{r echo=TRUE}
+Fertility %>%
+  filter(between(age, 22, 24)) %>%
+  summarise(Perc = mean(gender1 == 'male'))
+```
+\newpage
+### (h) Dla jakiej rasy proporcja chłopców jako pierwsze dziecko jest najmniejsza. Ile jest takich?
+```{r echo=TRUE}
+Fertility %>%
+  group_by(afam, hispanic, other) %>%
+  summarise(Perc = mean(gender1 == 'male'),
+            n = sum(gender1 == 'male')) %>%
+  arrange(Perc)
+```
+### (i) Wyznacz procent kobiet posiadających trzecie dziecko z podziałem na płeć dwóch pierwszych dzieci.
+```{r echo=TRUE}
+Fertility %>%
+  group_by(gender1, gender2) %>%
+  summarise(perc = mean(morekids == 'yes')) %>%
+  arrange(perc)
+```
+\newpage
+
+
+## 4. Zbiór danych Theoph zawiera dane z eksperymentu dotyczącego farmakokinetyki teofiliny. Wykonaj poniższy fragment kodu aby uzyskać obiekt df.
+```{r echo=TRUE, results='hide'}
+df <- tibble::as_tibble(Theoph)
+```
+### (a) Wybierz wszystkie kolumny pomiędzy (włącznie) Subject i Dose.
+```{r echo=TRUE}
+df %>%
+  select(Subject:Dose)
+``` 
+### (b) Posortuje dane biorąc jako pierwsze kryterium wagę (rosnąco), a jako drugie czas (malejąco).
+```{r echo=TRUE}
+df %>%
+  arrange(desc(Wt), Time)
+``` 
+### (c) Dodaj dodatkową zmienną weight.cat, która opsiuje klasyfikację osób według poniższego schematu:
+### • Poniżej 66,8 kg – Welterweight,
+### • 66,8 – 72,57 – Light-Middleweight,
+### • 72,57 – 76,2 – Middleweight,
+### • Powyżej 76,2 kg – Super-Middleweight.
+```{r echo=TRUE}
+df %>%
+  mutate(weight.cat = ifelse(Wt < 66.8, 'Welterweight',
+                             ifelse(Wt <= 72.57, 'Light-Middleweight',
+                                    ifelse(Wt <= 76.62, 'Middleweight',
+                                           'Super-Middleweight')))) -> df1
+df1
+``` 
+### (d) Pogrupuj dane ze względu na zmienną weight.cat i znajdź średni czas i sumę dawek dla każdej kategorii wagowej.
+```{r echo=TRUE}
+df1 %>%
+  mutate(weight.cat = factor(weight.cat,
+                             levels =  c('Welterweight',
+                                         'Light-Middleweight',
+                                         'Middleweight',
+                                         'Super-Middleweight'),
+                             ordered = TRUE)) %>%
+  group_by(weight.cat) %>%
+  summarise(mean.time = mean(Time), sum.dose = sum(Dose))
+``` 
